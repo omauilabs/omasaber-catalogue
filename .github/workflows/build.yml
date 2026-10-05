@@ -1,0 +1,36 @@
+# Builds catalogue.json every morning and deploys it to Cloudflare Pages.
+#
+# It runs on the omauilabs self-hosted runners only, never a GitHub-hosted one, and only on
+# a schedule or by hand: never on a pull request, so a stranger's code never reaches the
+# runner, public repo or not. Secrets: CLOUDFLARE_API_TOKEN (Pages: edit), CLOUDFLARE_ACCOUNT_ID.
+
+name: Build the catalogue
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalogue
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: [self-hosted, omauilabs]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Build (a thin or broken catalogue stops here)
+        run: python3 build.py --out "${{ runner.temp }}/site"
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy "${{ runner.temp }}/site" --project-name=omasaber-catalogue --branch=main
