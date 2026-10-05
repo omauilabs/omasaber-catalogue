@@ -1,0 +1,6 @@
+[
+  {"id": "ccsabers", "name": "CC Sabers", "url": "https://www.ccsabers.com", "boardOption": "Electronics",
+   "referral": {"param": "ref", "code": ""}},
+  {"id": "neosabers", "name": "NeoSabers", "url": "https://neosabers.com", "boardOption": "Type",
+   "referral": {"param": "ref", "code": ""}}
+]
